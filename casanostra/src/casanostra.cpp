@@ -77,11 +77,99 @@ void modificarMiembro(Miembro* raiz, int id) {
     cout << "Datos actualizados con éxito.\n";
 }
 
+// --- 1. FUNCIÓN DE LECTURA DE CSV ---
+void cargarDesdeCSV(Miembro*& padreArbol, const string& rutaArchivo) {
+    ifstream archivo(rutaArchivo);
+    if (!archivo.is_open()) {
+        cout << "[!] Error al abrir el archivo: " << rutaArchivo << "\n";
+        return;
+    }
+
+    string linea;
+    // Leer la primera línea (encabezados) para ignorarla
+    if (getline(archivo, linea)) {
+        // Saltado con éxito
+    }
+
+    // Leer los datos línea por línea
+    while (getline(archivo, linea)) {
+        if (linea.empty()) continue; // Ignorar líneas vacías
+
+        stringstream ss(linea);
+        string token;
+        
+        Miembro* nuevo = new Miembro();
+
+        // Parsear cada columna separada por comas
+        getline(ss, token, ','); nuevo->id = stoi(token);
+        getline(ss, token, ','); nuevo->name = token;
+        getline(ss, token, ','); nuevo->last_name = token;
+        getline(ss, token, ','); nuevo->gender = token[0];
+        getline(ss, token, ','); nuevo->age = stoi(token);
+        getline(ss, token, ','); nuevo->id_boss = stoi(token);
+        getline(ss, token, ','); nuevo->is_dead = (stoi(token) == 1);
+        getline(ss, token, ','); nuevo->in_jail = (stoi(token) == 1);
+        getline(ss, token, ','); nuevo->was_boss = (stoi(token) == 1);
+        getline(ss, token, ','); nuevo->is_boss = (stoi(token) == 1);
+
+        // Insertar directamente en el árbol
+        insertarEnJerarquia(padreArbol, nuevo);
+    }
+
+    archivo.close();
+    cout << "[+] Datos cargados correctamente desde el CSV.\n";
+}
+
+// --- 2. FUNCIONES DE GUARDADO EN CSV (Usa Preorden) ---
+void escribirPreorden(Miembro* nodo, ofstream& archivo) {
+    if (nodo == nullptr) return;
+
+    // Escribir el nodo actual en formato CSV
+    archivo << nodo->id << ","
+            << nodo->name << ","
+            << nodo->last_name << ","
+            << nodo->gender << ","
+            << nodo->age << ","
+            << nodo->id_boss << ","
+            << (nodo->is_dead ? 1 : 0) << ","
+            << (nodo->in_jail ? 1 : 0) << ","
+            << (nodo->was_boss ? 1 : 0) << ","
+            << (nodo->is_boss ? 1 : 0) << "\n";
+
+    // Visitar hijos
+    escribirPreorden(nodo->izquierdo, archivo);
+    escribirPreorden(nodo->derecho, archivo);
+}
+
+// Función principal que abre el archivo e inicia el proceso de guardado
+void guardarEnCSV(Miembro* raiz, const string& rutaArchivo) {
+    if (raiz == nullptr) {
+        cout << "[!] El árbol está vacío. Nada que guardar.\n";
+        return;
+    }
+
+    ofstream archivo(rutaArchivo);
+    if (!archivo.is_open()) {
+        cout << "[!] Error al abrir el archivo para guardar: " << rutaArchivo << "\n";
+        return;
+    }
+
+    // Escribir los encabezados exactamente como pide el enunciado
+    archivo << "id,name,last_name,gender,age,id_boss,is_dead,in_jail,was_boss,is_boss\n";
+
+    // Iniciar el recorrido de escritura
+    escribirPreorden(raiz, archivo);
+
+    archivo.close();
+    cout << "[+] Árbol guardado con éxito en " << rutaArchivo << "\n";
+}
+
 //main
 int main() {
     Miembro* padre = nullptr; 
 
-    //csv
+    // Carga inicial automática al abrir el programa
+    cargarDesdeCSV(padre, "bin/datos.csv"); 
 
     int opcion = 0;
     while (opcion != 5) {
@@ -100,8 +188,6 @@ int main() {
                 mostrarLineaSucesion(padre);
                 break;
             case 2:
-                // Aquí disparas la lógica del punto 3 si el jefe actual 
-                // cumple las condiciones de muerte, cárcel o > 70 años.
                 cout << "Ejecutando algoritmos de sucesión...\n";
                 break;
             case 3: {
@@ -109,12 +195,16 @@ int main() {
                 cout << "Ingrese el ID del miembro a modificar: ";
                 cin >> idMod;
                 modificarMiembro(padre, idMod);
+                guardarEnCSV(padre, "bin/datos.csv");
                 break;
             }
             case 4:
-                cout << "Leyendo datos...\n";
+                cout << "Recargando datos desde el archivo...\n";
+                padre = nullptr; 
+                cargarDesdeCSV(padre, "bin/datos.csv");
                 break;
             case 5:
+                guardarEnCSV(padre, "bin/datos.csv");
                 cout << "Cerrando sistema. Mantén los ojos abiertos.\n";
                 break;
             default:
