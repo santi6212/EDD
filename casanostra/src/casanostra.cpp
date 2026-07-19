@@ -88,21 +88,17 @@ void cargarDesdeCSV(Miembro*& padreArbol, const string& rutaArchivo) {
     }
 
     string linea;
-    // Leer la primera línea (encabezados) para ignorarla
     if (getline(archivo, linea)) {
-        // Saltado con éxito
     }
 
-    // Leer los datos línea por línea
     while (getline(archivo, linea)) {
-        if (linea.empty()) continue; // Ignorar líneas vacías
+        if (linea.empty()) continue;
 
         stringstream ss(linea);
         string token;
         
         Miembro* nuevo = new Miembro();
 
-        // Parsear cada columna separada por comas
         getline(ss, token, ','); nuevo->id = atoi(token.c_str());
         getline(ss, token, ','); nuevo->name = token;
         getline(ss, token, ','); nuevo->last_name = token;
@@ -114,7 +110,6 @@ void cargarDesdeCSV(Miembro*& padreArbol, const string& rutaArchivo) {
         getline(ss, token, ','); nuevo->was_boss = (atoi(token.c_str()) == 1);
         getline(ss, token, ','); nuevo->is_boss = (atoi(token.c_str()) == 1);
 
-        // Insertar directamente en el árbol
         insertarEnJerarquia(padreArbol, nuevo);
     }
 
@@ -122,11 +117,10 @@ void cargarDesdeCSV(Miembro*& padreArbol, const string& rutaArchivo) {
     cout << "[+] Datos cargados correctamente desde el CSV.\n";
 }
 
-// --- 2. FUNCIONES DE GUARDADO EN CSV (Usa Preorden) ---
+// --- 2. FUNCIONES DE GUARDADO EN CSV ---
 void escribirPreorden(Miembro* nodo, ofstream& archivo) {
     if (nodo == nullptr) return;
 
-    // Escribir el nodo actual en formato CSV
     archivo << nodo->id << ","
             << nodo->name << ","
             << nodo->last_name << ","
@@ -138,12 +132,10 @@ void escribirPreorden(Miembro* nodo, ofstream& archivo) {
             << (nodo->was_boss ? 1 : 0) << ","
             << (nodo->is_boss ? 1 : 0) << "\n";
 
-    // Visitar hijos
     escribirPreorden(nodo->izquierdo, archivo);
     escribirPreorden(nodo->derecho, archivo);
 }
 
-// Función principal que abre el archivo e inicia el proceso de guardado
 void guardarEnCSV(Miembro* raiz, const string& rutaArchivo) {
     if (raiz == nullptr) {
         cout << "[!] El árbol está vacío. Nada que guardar.\n";
@@ -156,14 +148,19 @@ void guardarEnCSV(Miembro* raiz, const string& rutaArchivo) {
         return;
     }
 
-    // Escribir los encabezados exactamente como pide el enunciado
     archivo << "id,name,last_name,gender,age,id_boss,is_dead,in_jail,was_boss,is_boss\n";
 
-    // Iniciar el recorrido de escritura
     escribirPreorden(raiz, archivo);
 
     archivo.close();
     cout << "[+] Árbol guardado con éxito en " << rutaArchivo << "\n";
+}
+
+void liberarArbol(Miembro* nodo) {
+    if (nodo == nullptr) return;
+    liberarArbol(nodo->izquierdo);
+    liberarArbol(nodo->derecho);
+    delete nodo;
 }
 
 //main
@@ -171,7 +168,6 @@ int main() {
 	setlocale(LC_ALL, "Spanish");
     Miembro* padre = nullptr; 
 
-    // Carga inicial automática al abrir el programa
     cargarDesdeCSV(padre, "datos.csv"); 
 
     int opcion = 0;
@@ -185,7 +181,7 @@ int main() {
         cout << "Seleccione una opción: ";
         cin >> opcion;
 
-        switch (opcion) {
+switch (opcion) {
             case 1:
                 cout << "\n--- LINEA DE SUCESION ACTUAL ---\n";
                 mostrarLineaSucesion(padre);
@@ -203,11 +199,13 @@ int main() {
             }
             case 4:
                 cout << "Recargando datos desde el archivo...\n";
+                liberarArbol(padre); 
                 padre = nullptr; 
-                cargarDesdeCSV(padre, "datos.csv");
+                cargarDesdeCSV(padre, "datos.csv"); 
                 break;
             case 5:
                 guardarEnCSV(padre, "datos.csv");
+                liberarArbol(padre);
                 cout << "Cerrando sistema. Mantén los ojos abiertos.\n";
                 break;
             default:
