@@ -172,6 +172,7 @@ int main() {
 
     int opcion = 0;
     while (opcion != 5) {
+    	system("cls");
         cout << "\n=== CONTI CORLEONE MANAGEMENT SYSTEM ===\n";
         cout << "1. Mostrar Línea de Sucesión Actual (Vivos)\n";
         cout << "2. Evaluar Estado del Jefe (Sucesión Automática)\n";
@@ -185,9 +186,11 @@ switch (opcion) {
             case 1:
                 cout << "\n--- LINEA DE SUCESION ACTUAL ---\n";
                 mostrarLineaSucesion(padre);
+                system("pause");
                 break;
             case 2:
                 cout << "Ejecutando algoritmos de sucesión...\n";
+                system("pause");
                 break;
             case 3: {
                 int idMod;
@@ -195,6 +198,7 @@ switch (opcion) {
                 cin >> idMod;
                 modificarMiembro(padre, idMod);
                 guardarEnCSV(padre, "datos.csv");
+                system("pause");
                 break;
             }
             case 4:
@@ -202,6 +206,7 @@ switch (opcion) {
                 liberarArbol(padre); 
                 padre = nullptr; 
                 cargarDesdeCSV(padre, "datos.csv"); 
+                system("pause");
                 break;
             case 5:
                 guardarEnCSV(padre, "datos.csv");
@@ -210,6 +215,7 @@ switch (opcion) {
                 break;
             default:
                 cout << "Opción inválida.\n";
+                system("pause");
         }
     }
     return 0;
