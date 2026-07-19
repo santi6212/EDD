@@ -210,35 +210,46 @@ Miembro* determinarNuevoJefe(Miembro* raiz, Miembro* jefeMuerto, bool permitirEn
 
     if (!permitirEnCarcel) {
         Miembro* candidatoAbajo = buscarSucesorEnSubarbol(jefeMuerto->izquierdo);
-        if (candidatoAbajo) return candidatoAbajo;
+        if (candidatoAbajo && candidatoAbajo != jefeMuerto) return candidatoAbajo; 
+        
         candidatoAbajo = buscarSucesorEnSubarbol(jefeMuerto->derecho);
-        if (candidatoAbajo) return candidatoAbajo;
+        if (candidatoAbajo && candidatoAbajo != jefeMuerto) return candidatoAbajo; 
     } else {
-        if (jefeMuerto->izquierdo && !jefeMuerto->izquierdo->is_dead) return jefeMuerto->izquierdo;
-        if (jefeMuerto->derecho && !jefeMuerto->derecho->is_dead) return jefeMuerto->derecho;
+        if (jefeMuerto->izquierdo && !jefeMuerto->izquierdo->is_dead && jefeMuerto->izquierdo != jefeMuerto) 
+            return jefeMuerto->izquierdo;
+        if (jefeMuerto->derecho && !jefeMuerto->derecho->is_dead && jefeMuerto->derecho != jefeMuerto) 
+            return jefeMuerto->derecho;
     }
 
     Miembro* companero = obtenerCompaneroSucesor(jefeMuerto);
-    if (companero) {
+    if (companero && companero != jefeMuerto) {
         if (!permitirEnCarcel && esAptoParaJefe(companero)) return companero;
         if (!permitirEnCarcel) {
             Miembro* candidatoCompanero = buscarSucesorEnSubarbol(companero);
-            if (candidatoCompanero) return candidatoCompanero;
-        } else if (!companero->is_dead) {
-            return companero;
+            if (candidatoCompanero && candidatoCompanero != jefeMuerto) return candidatoCompanero;
+        } else if (!companero->is_dead && companero->age <= 70) {
+            return companero; 
         }
     }
 
     if (jefeMuerto->padre != nullptr) {
-        return determinarNuevoJefe(raiz, jefeMuerto->padre, permitirEnCarcel);
+    	
+    	if (!permitirEnCarcel && esAptoParaJefe(jefeMuerto->padre)) {
+            return jefeMuerto->padre;
+        } else if (permitirEnCarcel && !jefeMuerto->padre->is_dead && jefeMuerto->padre->age <= 70) {
+            return jefeMuerto->padre;
+        }
+        
+        Miembro* candidatoArriba = determinarNuevoJefe(raiz, jefeMuerto->padre, permitirEnCarcel);
+        if (candidatoArriba && candidatoArriba != jefeMuerto) return candidatoArriba; 
     }
 
     if (!permitirEnCarcel) {
         Miembro* jefeActual = encontrarJefeActual(raiz);
-        return determinarNuevoJefe(raiz, jefeActual, true);
+        return determinarNuevoJefe(raiz, jefeActual, true); 
     }
 
-    return nullptr;
+    return nullptr; 
 }
 
 void evaluarEstadoDelJefe(Miembro* raiz) {
@@ -269,7 +280,7 @@ void evaluarEstadoDelJefe(Miembro* raiz) {
             cout << "ID: " << sucesor->id << " -> " << sucesor->name << " " << sucesor->last_name;
             if (sucesor->in_jail) cout << " (Gobernará desde prisión)";
         } else {
-            cout << "No quedó ningún miembro vivo para heredar el control.\n";
+            cout << "No quedó ningún miembro para heredar el control.\n";
         }
     } else {
         cout << "El Don goza de plena salud y libertad. No se requiere sucesión en este momento.\n";
