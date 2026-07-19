@@ -2,7 +2,8 @@
 #include <fstream>
 #include <sstream>
 #include <string>
-
+#include <cstdlib>
+#include <clocale>
 using namespace std;
 
 struct Miembro {
@@ -101,16 +102,16 @@ void cargarDesdeCSV(Miembro*& padreArbol, const string& rutaArchivo) {
         Miembro* nuevo = new Miembro();
 
         // Parsear cada columna separada por comas
-        getline(ss, token, ','); nuevo->id = stoi(token);
+        getline(ss, token, ','); nuevo->id = atoi(token.c_str());
         getline(ss, token, ','); nuevo->name = token;
         getline(ss, token, ','); nuevo->last_name = token;
         getline(ss, token, ','); nuevo->gender = token[0];
-        getline(ss, token, ','); nuevo->age = stoi(token);
-        getline(ss, token, ','); nuevo->id_boss = stoi(token);
-        getline(ss, token, ','); nuevo->is_dead = (stoi(token) == 1);
-        getline(ss, token, ','); nuevo->in_jail = (stoi(token) == 1);
-        getline(ss, token, ','); nuevo->was_boss = (stoi(token) == 1);
-        getline(ss, token, ','); nuevo->is_boss = (stoi(token) == 1);
+        getline(ss, token, ','); nuevo->age = atoi(token.c_str());
+        getline(ss, token, ','); nuevo->id_boss = atoi(token.c_str());
+        getline(ss, token, ','); nuevo->is_dead = (atoi(token.c_str()) == 1);
+        getline(ss, token, ','); nuevo->in_jail = (atoi(token.c_str()) == 1);
+        getline(ss, token, ','); nuevo->was_boss = (atoi(token.c_str()) == 1);
+        getline(ss, token, ','); nuevo->is_boss = (atoi(token.c_str()) == 1);
 
         // Insertar directamente en el árbol
         insertarEnJerarquia(padreArbol, nuevo);
@@ -166,10 +167,11 @@ void guardarEnCSV(Miembro* raiz, const string& rutaArchivo) {
 
 //main
 int main() {
+	setlocale(LC_ALL, "Spanish");
     Miembro* padre = nullptr; 
 
     // Carga inicial automática al abrir el programa
-    cargarDesdeCSV(padre, "bin/datos.csv"); 
+    cargarDesdeCSV(padre, "datos.csv"); 
 
     int opcion = 0;
     while (opcion != 5) {
