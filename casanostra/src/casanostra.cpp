@@ -163,6 +163,119 @@ void liberarArbol(Miembro* nodo) {
     delete nodo;
 }
 
+//verificaciones para jefe
+
+bool esAptoParaJefe(Miembro* nodo) {
+    if (nodo == nullptr) return false;
+    return (!nodo->is_dead && !nodo->in_jail && nodo->age <= 70);
+}
+
+Miembro* buscarSucesorEnSubarbol(Miembro* nodo) {
+    if (nodo == nullptr) return nullptr;
+    
+    // Si el nodo actual es apto, lo encontramos
+    if (esAptoParaJefe(nodo)) return nodo;
+    
+    // Si no, buscamos por la rama izquierda (primer sucesor asignado)
+    Miembro* izq = buscarSucesorEnSubarbol(nodo->izquierdo);
+    if (izq != nullptr) return izq;
+    
+    // Si no hay nadie apto en la izquierda, buscamos en la derecha
+    return buscarSucesorEnSubarbol(nodo->derecho);
+}
+
+Miembro* obtenerCompaneroSucesor(Miembro* nodo) {
+    if (nodo == nullptr || nodo->padre == nullptr) return nullptr;
+    
+    // Si yo soy el hijo izquierdo, mi compañero es el derecho
+    if (nodo->padre->izquierdo == nodo) {
+        return nodo->padre->derecho;
+    }
+    // Si yo soy el derecho, mi compañero es el izquierdo
+    return nodo->padre->izquierdo;
+}
+
+//caso 2
+
+Miembro* encontrarJefeActual(Miembro* nodo) {
+    if (nodo == nullptr) return nullptr;
+    if (nodo->is_boss) return nodo;
+    Miembro* izq = encontrarJefeActual(nodo->izquierdo);
+    if (izq != nullptr) return izq;
+    return encontrarJefeActual(nodo->derecho);
+}
+
+Miembro* determinarNuevoJefe(Miembro* raiz, Miembro* jefeMuerto, bool permitirEnCarcel = false) {
+    if (jefeMuerto == nullptr) return nullptr;
+
+    if (!permitirEnCarcel) {
+        Miembro* candidatoAbajo = buscarSucesorEnSubarbol(jefeMuerto->izquierdo);
+        if (candidatoAbajo) return candidatoAbajo;
+        candidatoAbajo = buscarSucesorEnSubarbol(jefeMuerto->derecho);
+        if (candidatoAbajo) return candidatoAbajo;
+    } else {
+        if (jefeMuerto->izquierdo && !jefeMuerto->izquierdo->is_dead) return jefeMuerto->izquierdo;
+        if (jefeMuerto->derecho && !jefeMuerto->derecho->is_dead) return jefeMuerto->derecho;
+    }
+
+    Miembro* companero = obtenerCompaneroSucesor(jefeMuerto);
+    if (companero) {
+        if (!permitirEnCarcel && esAptoParaJefe(companero)) return companero;
+        if (!permitirEnCarcel) {
+            Miembro* candidatoCompanero = buscarSucesorEnSubarbol(companero);
+            if (candidatoCompanero) return candidatoCompanero;
+        } else if (!companero->is_dead) {
+            return companero;
+        }
+    }
+
+    if (jefeMuerto->padre != nullptr) {
+        return determinarNuevoJefe(raiz, jefeMuerto->padre, permitirEnCarcel);
+    }
+
+    if (!permitirEnCarcel) {
+        Miembro* jefeActual = encontrarJefeActual(raiz);
+        return determinarNuevoJefe(raiz, jefeActual, true);
+    }
+
+    return nullptr;
+}
+
+void evaluarEstadoDelJefe(Miembro* raiz) {
+    Miembro* jefe = encontrarJefeActual(raiz);
+    if (jefe == nullptr) {
+        cout << "[!] Error: No se encontró ningún jefe activo en el sistema.\n";
+        return;
+    }
+
+    cout << "Jefe Actual: " << jefe->name << " " << jefe->last_name 
+         << " (Edad: " << jefe->age << ")\n";
+
+    if (jefe->is_dead || jefe->in_jail || jefe->age > 70) {
+        cout << "[!] Alerta: El jefe actual ya no es apto para liderar ";
+        if (jefe->is_dead) cout << "(Fallecido).\n";
+        else if (jefe->in_jail) cout << "(En Prisión).\n";
+        else cout << "(Superó el límite de 70 años).\n";
+
+        cout << "Buscando al legítimo sucesor según las leyes de la familia...\n";
+        Miembro* sucesor = determinarNuevoJefe(raiz, jefe, false);
+
+        if (sucesor != nullptr) {
+            jefe->is_boss = false;
+            jefe->was_boss = true;
+            sucesor->is_boss = true;
+
+            cout << "El nuevo jefe de la familia es:\n";
+            cout << "ID: " << sucesor->id << " -> " << sucesor->name << " " << sucesor->last_name;
+            if (sucesor->in_jail) cout << " (Gobernará desde prisión)";
+        } else {
+            cout << "No quedó ningún miembro vivo para heredar el control.\n";
+        }
+    } else {
+        cout << "El Don goza de plena salud y libertad. No se requiere sucesión en este momento.\n";
+    }
+}
+
 //main
 int main() {
 	setlocale(LC_ALL, "Spanish");
@@ -190,6 +303,9 @@ switch (opcion) {
                 break;
             case 2:
                 cout << "Ejecutando algoritmos de sucesión...\n";
+                evaluarEstadoDelJefe(padre); 
+                guardarEnCSV(padre, "datos.csv");
+                cout << "\n";
                 system("pause");
                 break;
             case 3: {
