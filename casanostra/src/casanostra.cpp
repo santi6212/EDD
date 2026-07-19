@@ -4,6 +4,7 @@
 #include <string>
 #include <cstdlib>
 #include <clocale>
+
 using namespace std;
 
 struct Miembro {
@@ -197,16 +198,16 @@ int main() {
                 cout << "Ingrese el ID del miembro a modificar: ";
                 cin >> idMod;
                 modificarMiembro(padre, idMod);
-                guardarEnCSV(padre, "bin/datos.csv");
+                guardarEnCSV(padre, "datos.csv");
                 break;
             }
             case 4:
                 cout << "Recargando datos desde el archivo...\n";
                 padre = nullptr; 
-                cargarDesdeCSV(padre, "bin/datos.csv");
+                cargarDesdeCSV(padre, "datos.csv");
                 break;
             case 5:
-                guardarEnCSV(padre, "bin/datos.csv");
+                guardarEnCSV(padre, "datos.csv");
                 cout << "Cerrando sistema. Mantén los ojos abiertos.\n";
                 break;
             default:
