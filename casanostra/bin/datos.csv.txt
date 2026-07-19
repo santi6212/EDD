@@ -1,6 +1,0 @@
-id,name,last_name,gender,age,id_boss,is_dead,in_jail,was_boss,is_boss
-1,Vito,Corleone,H,75,0,0,0,0,1
-2,Santino,Corleone,H,40,1,0,0,0,0
-3,Michael,Corleone,H,35,1,0,0,0,0
-4,Fredo,Corleone,H,42,2,0,0,0,0
-5,Vincent,Corleone,H,25,3,0,1,0,0
