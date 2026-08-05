@@ -1,7 +1,7 @@
 #include <iostream>
 #include "grafo_lista.h"
 #include "grafo_matriz.h"
-
+#include <windows.h>
 using namespace std;
 
 void mostrar_menu() {
@@ -16,6 +16,7 @@ int main() {
     int opcion = 0;
 
     while (opcion != 3) {
+    	system("cls");
         mostrar_menu();
         cin >> opcion;
 
@@ -38,7 +39,8 @@ int main() {
             grafo_l.recorrido_anchura(1);
             grafo_l.recorrido_profundidad(1);
             grafo_l.camino_mas_corto(1, 4);
-
+			system("pause");
+			
         } else if (opcion == 2) {
             cout << "\n--- DEMO: GRAFO DE MATRIZ (Datos tipo int: Codigos de servidor) ---" << endl;
             GrafoMatriz<int> grafo_m(10);
@@ -56,7 +58,8 @@ int main() {
             grafo_m.recorrido_anchura(10);
             grafo_m.recorrido_profundidad(10);
             grafo_m.camino_mas_corto(10, 30);
-
+			system("pause");
+			
         } else if (opcion == 3) {
             cout << "Saliendo del programa..." << endl;
         } else {
